@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tambola · Beyond Beauty</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+      background: #003366;
+      color: white;
+      min-height: 100vh;
+    }
+
+    .container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* LEFT SIDEBAR */
+    .sidebar {
+      width: 250px;
+      background: #001f3f;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex-shrink: 0;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar button {
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar button:hover {
+      filter: brightness(1.1);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+
+    .sidebar button:active {
+      transform: translateY(0);
+    }
+
+    .start { background: #28a745; color: white; }
+    .pause { background: #ffc107; color: black; }
+    .stop { background: #dc3545; color: white; }
+    .full { background: #17a2b8; color: white; }
+    .export { background: #6f42c1; color: white; }
+
+    /* MODE SELECTOR BUTTONS */
+    .mode-selector {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 5px;
+    }
+
+    .mode-btn {
+      flex: 1;
+      padding: 12px 5px;
+      border: none;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .mode-auto {
+      background: #4a6fa5;
+      color: white;
+      border: 2px solid transparent;
+    }
+
+    .mode-manual {
+      background: #d97706;
+      color: white;
+      border: 2px solid transparent;
+    }
+
+    .mode-active {
+      border: 2px solid gold !important;
+      box-shadow: 0 0 15px gold;
+      transform: scale(1.05);
+    }
+
+    /* MANUAL CALL BUTTON */
+    .manual-call-btn {
+      background: #f39c12;
+      color: black;
+      font-size: 20px !important;
+      padding: 20px !important;
+      margin: 10px 0;
+      border-radius: 50px !important;
+      animation: manualPulse 2s infinite;
+      border: 3px solid white;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: 2px;
+    }
+
+    @keyframes manualPulse {
+      0%, 100% { transform: scale(1); background: #f39c12; }
+      50% { transform: scale(1.05); background: #f1c40f; box-shadow: 0 0 30px gold; }
+    }
+
+    .manual-call-btn:active {
+      transform: scale(0.95);
+      background: #e67e22;
+    }
+
+    .manual-call-btn.disabled {
+      opacity: 0.5;
+      pointer-events: none;
+      animation: none;
+    }
+
+    /* MAIN CONTENT */
+    .main {
+      flex: 1;
+      text-align: center;
+      padding: 20px 20px 20px 20px;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    /* LOGO */
+    .brand-logo {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(4px);
+      padding: 8px 18px;
+      border-radius: 60px;
+      border: 1px solid rgba(255,215,0,0.3);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.2;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      z-index: 10;
+      animation: logoGlow 3s infinite ease-in-out;
+    }
+
+    @keyframes logoGlow {
+      0%, 100% { box-shadow: 0 4px 12px rgba(255,215,0,0.2); }
+      50% { box-shadow: 0 4px 25px rgba(255,215,0,0.6); }
+    }
+
+    .logo-bbn {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: 2px;
+      color: #FFD966;
+      text-shadow: 2px 2px 0 #001f3f;
+    }
+
+    .logo-sub {
+      font-size: 13px;
+      font-weight: 400;
+      color: #e0e0e0;
+      letter-spacing: 2px;
+      word-spacing: 4px;
+      border-top: 1px dashed rgba(255,255,255,0.3);
+      padding-top: 3px;
+      margin-top: 2px;
+    }
+
+    /* MODE INDICATOR */
+    .mode-indicator {
+      display: inline-block;
+      padding: 8px 25px;
+      border-radius: 40px;
+      background: rgba(0,0,0,0.3);
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .mode-indicator span {
+      color: #FFD966;
+      text-transform: uppercase;
+    }
+
+    /* MAIN NUMBER DISPLAY */
+    #numberDisplay {
+      font-size: 120px;
+      margin: 20px auto 20px auto;
+      width: 250px;
+      height: 250px;
+      line-height: 250px;
+      border-radius: 50%;
+      background: white;
+      color: #003366;
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.8);
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    /* 20 DIFFERENT ANIMATIONS FOR EACH NUMBER */
+    .number-pulse-1 { animation: spinIn 0.6s ease-out !important; }
+    .number-pulse-2 { animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important; }
+    .number-pulse-3 { animation: flipIn 0.6s ease-out !important; }
+    .number-pulse-4 { animation: shakeIn 0.6s ease-out !important; }
+    .number-pulse-5 { animation: zoomIn 0.6s ease-out !important; }
+    .number-pulse-6 { animation: dropIn 0.6s ease-out !important; }
+    .number-pulse-7 { animation: glowPulse 0.6s ease-out !important; }
+    .number-pulse-8 { animation: rotateIn 0.6s ease-out !important; }
+    .number-pulse-9 { animation: elasticIn 0.6s ease-out !important; }
+    .number-pulse-10 { animation: fireworks 0.8s ease-out !important; }
+    .number-pulse-11 { animation: jackhammer 0.5s ease-out !important; }
+    .number-pulse-12 { animation: spiral 0.8s ease-out !important; }
+    .number-pulse-13 { animation: crackle 0.5s ease-out !important; }
+    .number-pulse-14 { animation: slingshot 0.6s ease-out !important; }
+    .number-pulse-15 { animation: vortex 0.8s ease-out !important; }
+    .number-pulse-16 { animation: trampoline 0.7s ease-out !important; }
+    .number-pulse-17 { animation: dizzy 0.8s ease-out !important; }
+    .number-pulse-18 { animation: meteor 0.6s ease-out !important; }
+    .number-pulse-19 { animation: heartbeat 0.8s ease-out !important; }
+    .number-pulse-20 { animation: rainbow 0.8s ease-out !important; }
+
+    /* ANIMATION KEYFRAMES */
+    @keyframes spinIn {
+      0% { transform: rotate(-180deg) scale(0.3); opacity: 0; }
+      100% { transform: rotate(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.3); opacity: 0; }
+      50% { transform: scale(1.2); }
+      70% { transform: scale(0.9); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes flipIn {
+      0% { transform: perspective(400px) rotateX(90deg); opacity: 0; }
+      40% { transform: perspective(400px) rotateX(-10deg); }
+      70% { transform: perspective(400px) rotateX(5deg); }
+      100% { transform: perspective(400px) rotateX(0); opacity: 1; }
+    }
+
+    @keyframes shakeIn {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+      20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+
+    @keyframes zoomIn {
+      0% { transform: scale(0.1); opacity: 0; }
+      60% { transform: scale(1.2); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes dropIn {
+      0% { transform: translateY(-500px); opacity: 0; }
+      70% { transform: translateY(20px); }
+      100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes glowPulse {
+      0% { box-shadow: 0 0 0px gold; }
+      50% { box-shadow: 0 0 100px gold; transform: scale(1.2); }
+      100% { box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+    }
+
+    @keyframes rotateIn {
+      0% { transform: rotate(-360deg) scale(0.3); opacity: 0; }
+      100% { transform: rotate(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes elasticIn {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.3); }
+      80% { transform: scale(0.95); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fireworks {
+      0% { transform: scale(0.1); opacity: 0; box-shadow: 0 0 0px red, 0 0 0px blue, 0 0 0px green; }
+      30% { transform: scale(1.2); box-shadow: 0 0 50px red, 0 0 50px blue, 0 0 50px green; }
+      70% { transform: scale(1.1); box-shadow: 0 0 30px gold, 0 0 30px orange, 0 0 30px yellow; }
+      100% { transform: scale(1); box-shadow: 0 0 40px rgba(255, 255, 255, 0.8); }
+    }
+
+    @keyframes jackhammer {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-5px) translateY(-5px); }
+      20%, 40%, 60%, 80% { transform: translateX(5px) translateY(5px); }
+    }
+
+    @keyframes spiral {
+      0% { transform: rotate(0deg) scale(0.1); opacity: 0; }
+      50% { transform: rotate(180deg) scale(1.3); }
+      100% { transform: rotate(360deg) scale(1); opacity: 1; }
+    }
+
+    @keyframes crackle {
+      0%, 100% { transform: scale(1); filter: brightness(1); }
+      25% { transform: scale(1.3); filter: brightness(1.5); }
+      50% { transform: scale(0.9); filter: brightness(1.8); }
+      75% { transform: scale(1.1); filter: brightness(1.3); }
+    }
+
+    @keyframes slingshot {
+      0% { transform: translateX(-200px) scale(0.5); opacity: 0; }
+      60% { transform: translateX(20px) scale(1.2); }
+      80% { transform: translateX(-5px) scale(0.95); }
+      100% { transform: translateX(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes vortex {
+      0% { transform: rotate(0deg) scale(0); opacity: 0; }
+      50% { transform: rotate(180deg) scale(2); opacity: 0.5; }
+      100% { transform: rotate(360deg) scale(1); opacity: 1; }
+    }
+
+    @keyframes trampoline {
+      0% { transform: translateY(0); }
+      20% { transform: translateY(-100px); }
+      40% { transform: translateY(20px); }
+      60% { transform: translateY(-30px); }
+      80% { transform: translateY(10px); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes dizzy {
+      0% { transform: rotate(0deg) scale(1); }
+      25% { transform: rotate(90deg) scale(1.1); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      75% { transform: rotate(270deg) scale(1.1); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes meteor {
+      0% { transform: translateX(200px) translateY(-200px) rotate(45deg) scale(0.1); opacity: 0; }
+      70% { transform: translateX(-20px) translateY(20px) rotate(45deg) scale(1.2); }
+      100% { transform: translateX(0) translateY(0) rotate(0) scale(1); opacity: 1; }
+    }
+
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.3); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.3); }
+      70% { transform: scale(1); }
+    }
+
+    @keyframes rainbow {
+      0% { filter: hue-rotate(0deg); transform: scale(1); }
+      25% { filter: hue-rotate(90deg); transform: scale(1.2); }
+      50% { filter: hue-rotate(180deg); transform: scale(1.1); }
+      75% { filter: hue-rotate(270deg); transform: scale(1.2); }
+      100% { filter: hue-rotate(360deg); transform: scale(1); }
+    }
+
+    /* Tambola board */
+    .board {
+      display: grid;
+      grid-template-columns: repeat(10, 60px);
+      gap: 10px;
+      justify-content: center;
+      margin: 30px 0 20px;
+    }
+
+    .cell {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: #5d4037;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #ffcc80;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 20 UNIQUE COLORS FOR CALLED NUMBERS */
+    .called-color-1 { background: #FF6B6B !important; }  /* Coral Red */
+    .called-color-2 { background: #4ECDC4 !important; }  /* Turquoise */
+    .called-color-3 { background: #45B7D1 !important; }  /* Sky Blue */
+    .called-color-4 { background: #96CEB4 !important; }  /* Mint */
+    .called-color-5 { background: #FFEAA7 !important; color: #333 !important; }  /* Cream */
+    .called-color-6 { background: #DDA0DD !important; }  /* Plum */
+    .called-color-7 { background: #FFB347 !important; }  /* Orange */
+    .called-color-8 { background: #9B59B6 !important; }  /* Purple */
+    .called-color-9 { background: #3498DB !important; }  /* Bright Blue */
+    .called-color-10 { background: #E67E22 !important; } /* Carrot Orange */
+    .called-color-11 { background: #E74C3C !important; } /* Vermilion */
+    .called-color-12 { background: #1ABC9C !important; } /* Greenish Teal */
+    .called-color-13 { background: #F1C40F !important; color: #333 !important; } /* Sunflower */
+    .called-color-14 { background: #E91E63 !important; } /* Pink */
+    .called-color-15 { background: #9C27B0 !important; } /* Deep Purple */
+    .called-color-16 { background: #FF9800 !important; } /* Vivid Orange */
+    .called-color-17 { background: #00BCD4 !important; } /* Cyan */
+    .called-color-18 { background: #8BC34A !important; } /* Light Green */
+    .called-color-19 { background: #FF4081 !important; } /* Hot Pink */
+    .called-color-20 { background: #7B1FA2 !important; } /* Royal Purple */
+
+    /* 20 DIFFERENT CELL ANIMATIONS */
+    .called-1 { animation: cellPulse 0.8s ease-out !important; }
+    .called-2 { animation: cellSpin 0.8s ease-out !important; }
+    .called-3 { animation: cellBounce 0.8s ease-out !important; }
+    .called-4 { animation: cellFlash 0.8s ease-out !important; }
+    .called-5 { animation: cellRubber 0.8s ease-out !important; }
+    .called-6 { animation: cellShake 0.8s ease-out !important; }
+    .called-7 { animation: cellSwing 0.8s ease-out !important; }
+    .called-8 { animation: cellWobble 0.8s ease-out !important; }
+    .called-9 { animation: cellJello 0.8s ease-out !important; }
+    .called-10 { animation: cellHeartBeat 0.8s ease-out !important; }
+    .called-11 { animation: cellExplode 0.8s ease-out !important; }
+    .called-12 { animation: cellWave 0.8s ease-out !important; }
+    .called-13 { animation: cellSpin3D 0.8s ease-out !important; }
+    .called-14 { animation: cellVibration 0.8s ease-out !important; }
+    .called-15 { animation: cellBlink 0.8s ease-out !important; }
+    .called-16 { animation: cellTwist 0.8s ease-out !important; }
+    .called-17 { animation: cellFlip 0.8s ease-out !important; }
+    .called-18 { animation: cellSkew 0.8s ease-out !important; }
+    .called-19 { animation: cellGlitch 0.8s ease-out !important; }
+    .called-20 { animation: cellRainbow 0.8s ease-out !important; }
+
+    /* CELL ANIMATION KEYFRAMES */
+    @keyframes cellPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes cellSpin {
+      0% { transform: rotate(0deg); }
+      50% { transform: rotate(180deg) scale(1.3); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes cellBounce {
+      0%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-30px); }
+      60% { transform: translateY(-15px); }
+    }
+
+    @keyframes cellFlash {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0.3; }
+    }
+
+    @keyframes cellRubber {
+      0% { transform: scale(1); }
+      30% { transform: scaleX(1.25) scaleY(0.75); }
+      40% { transform: scaleX(0.75) scaleY(1.25); }
+      60% { transform: scaleX(1.15) scaleY(0.85); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes cellShake {
+      0%, 100% { transform: translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+      20%, 40%, 60%, 80% { transform: translateX(10px); }
+    }
+
+    @keyframes cellSwing {
+      20% { transform: rotate(15deg); }
+      40% { transform: rotate(-10deg); }
+      60% { transform: rotate(5deg); }
+      80% { transform: rotate(-5deg); }
+      100% { transform: rotate(0deg); }
+    }
+
+    @keyframes cellWobble {
+      0% { transform: translateX(0%); }
+      15% { transform: translateX(-25%) rotate(-5deg); }
+      30% { transform: translateX(20%) rotate(3deg); }
+      45% { transform: translateX(-15%) rotate(-3deg); }
+      60% { transform: translateX(10%) rotate(2deg); }
+      75% { transform: translateX(-5%) rotate(-1deg); }
+      100% { transform: translateX(0%); }
+    }
+
+    @keyframes cellJello {
+      0%, 100% { transform: scale(1, 1); }
+      30% { transform: scale(1.25, 0.75); }
+      40% { transform: scale(0.75, 1.25); }
+      50% { transform: scale(1.15, 0.85); }
+      65% { transform: scale(0.95, 1.05); }
+      75% { transform: scale(1.05, 0.95); }
+    }
+
+    @keyframes cellHeartBeat {
+      0% { transform: scale(1); }
+      14% { transform: scale(1.3); }
+      28% { transform: scale(1); }
+      42% { transform: scale(1.3); }
+      70% { transform: scale(1); }
+    }
+
+    @keyframes cellExplode {
+      0% { transform: scale(1); opacity: 1; }
+      30% { transform: scale(1.5); opacity: 0.8; }
+      60% { transform: scale(0.8); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes cellWave {
+      0% { transform: translateY(0); }
+      25% { transform: translateY(-15px) scale(1.1); }
+      50% { transform: translateY(0) scale(1); }
+      75% { transform: translateY(-7px) scale(1.05); }
+      100% { transform: translateY(0); }
+    }
+
+    @keyframes cellSpin3D {
+      0% { transform: perspective(400px) rotateY(0deg); }
+      50% { transform: perspective(400px) rotateY(180deg) scale(1.3); }
+      100% { transform: perspective(400px) rotateY(360deg) scale(1); }
+    }
+
+    @keyframes cellVibration {
+      0%, 100% { transform: translate(0, 0); }
+      10% { transform: translate(-2px, -2px); }
+      20% { transform: translate(2px, -2px); }
+      30% { transform: translate(-2px, 2px); }
+      40% { transform: translate(2px, 2px); }
+      50% { transform: translate(-2px, -2px); }
+      60% { transform: translate(2px, -2px); }
+      70% { transform: translate(-2px, 2px); }
+      80% { transform: translate(2px, 2px); }
+    }
+
+    @keyframes cellBlink {
+      0%, 50%, 100% { opacity: 1; }
+      25%, 75% { opacity: 0.2; }
+    }
+
+    @keyframes cellTwist {
+      0% { transform: rotate(0deg) scale(1); }
+      33% { transform: rotate(120deg) scale(1.2); }
+      66% { transform: rotate(240deg) scale(0.9); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes cellFlip {
+      0% { transform: perspective(400px) rotateX(0deg); }
+      50% { transform: perspective(400px) rotateX(180deg) scale(1.2); }
+      100% { transform: perspective(400px) rotateX(360deg) scale(1); }
+    }
+
+    @keyframes cellSkew {
+      0% { transform: skew(0deg); }
+      25% { transform: skew(10deg) scale(1.1); }
+      50% { transform: skew(-10deg) scale(1.1); }
+      75% { transform: skew(5deg) scale(1.05); }
+      100% { transform: skew(0deg); }
+    }
+
+    @keyframes cellGlitch {
+      0%, 100% { transform: translate(0, 0); filter: hue-rotate(0deg); }
+      10% { transform: translate(-5px, 5px); filter: hue-rotate(90deg); }
+      20% { transform: translate(5px, -5px); filter: hue-rotate(180deg); }
+      30% { transform: translate(-5px, -5px); filter: hue-rotate(270deg); }
+      40% { transform: translate(5px, 5px); filter: hue-rotate(360deg); }
+      50% { transform: translate(-3px, 3px); }
+      60% { transform: translate(3px, -3px); }
+      70% { transform: translate(-3px, -3px); }
+      80% { transform: translate(3px, 3px); }
+    }
+
+    @keyframes cellRainbow {
+      0% { background: #ff0000; transform: scale(1); }
+      16% { background: #ffaa00; transform: scale(1.2); }
+      33% { background: #ffff00; transform: scale(1.1); }
+      50% { background: #00ff00; transform: scale(1.2); }
+      66% { background: #0000ff; transform: scale(1.1); }
+      83% { background: #aa00ff; transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    /* HISTORY ITEMS - now with unique colors too */
+    #history {
+      margin-top: 15px;
+      font-size: 20px;
+      background: rgba(0,0,0,0.2);
+      padding: 12px;
+      border-radius: 40px;
+      min-height: 60px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+
+    #history span {
+      padding: 6px 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      border: 1px solid rgba(255,255,255,0.3);
+      box-shadow: inset 0 1px 3px rgba(255,255,255,0.3);
+      animation: historySlide 0.4s ease-out;
+      transition: all 0.2s;
+    }
+
+    .history-color-1 { background: #FF6B6B !important; color: white; }
+    .history-color-2 { background: #4ECDC4 !important; color: white; }
+    .history-color-3 { background: #45B7D1 !important; color: white; }
+    .history-color-4 { background: #96CEB4 !important; color: #333; }
+    .history-color-5 { background: #FFEAA7 !important; color: #333; }
+    .history-color-6 { background: #DDA0DD !important; color: white; }
+    .history-color-7 { background: #FFB347 !important; color: white; }
+    .history-color-8 { background: #9B59B6 !important; color: white; }
+    .history-color-9 { background: #3498DB !important; color: white; }
+    .history-color-10 { background: #E67E22 !important; color: white; }
+    .history-color-11 { background: #E74C3C !important; color: white; }
+    .history-color-12 { background: #1ABC9C !important; color: white; }
+    .history-color-13 { background: #F1C40F !important; color: #333; }
+    .history-color-14 { background: #E91E63 !important; color: white; }
+    .history-color-15 { background: #9C27B0 !important; color: white; }
+    .history-color-16 { background: #FF9800 !important; color: white; }
+    .history-color-17 { background: #00BCD4 !important; color: white; }
+    .history-color-18 { background: #8BC34A !important; color: white; }
+    .history-color-19 { background: #FF4081 !important; color: white; }
+    .history-color-20 { background: #7B1FA2 !important; color: white; }
+
+    @keyframes historySlide {
+      0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* CONFETTI */
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+
+    .confetti-piece {
+      position: absolute;
+      width: 10px;
+      height: 20px;
+      background: gold;
+      top: -20px;
+      opacity: 0.8;
+      animation: confettiFall 3s linear forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    footer {
+      margin-top: 35px;
+      opacity: 0.75;
+      font-size: 15px;
+      letter-spacing: 1px;
+      transition: all 0.3s ease;
+    }
+
+    /* FULLSCREEN CLEAN MODE STYLES */
+    body.fullscreen-mode .sidebar {
+      display: none !important;
+    }
+
+    body.fullscreen-mode .mode-indicator {
+      display: none !important;
+    }
+
+    body.fullscreen-mode #history {
+      display: none !important;
+    }
+
+    body.fullscreen-mode footer {
+      display: none !important;
+    }
+
+    body.fullscreen-mode h1 {
+      display: none !important;
+    }
+
+    body.fullscreen-mode h3 {
+      display: none !important;
+    }
+
+    body.fullscreen-mode .main {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+    }
+
+    body.fullscreen-mode .board {
+      margin: 20px 0;
+    }
+
+    body.fullscreen-mode #numberDisplay {
+      width: 200px;
+      height: 200px;
+      line-height: 200px;
+      font-size: 100px;
+      margin: 10px auto;
+    }
+
+    /* Exit fullscreen hint */
+    .exit-fullscreen-hint {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,0,0,0.6);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 10000;
+    }
+
+    body.fullscreen-mode .exit-fullscreen-hint {
+      opacity: 0.5;
+    }
+
+    .exit-fullscreen-hint span {
+      color: #FFD966;
+      font-weight: bold;
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .board {
+        grid-template-columns: repeat(10, 40px);
+        gap: 5px;
+      }
+      .cell {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+      }
+      #numberDisplay {
+        width: 180px;
+        height: 180px;
+        line-height: 180px;
+        font-size: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Exit fullscreen hint -->
+<div class="exit-fullscreen-hint">
+  Press <span>ESC</span> or click <span>Fullscreen</span> button again to exit
+</div>
+
+<div class="container">
+  <div class="sidebar">
+    <button class="start" onclick="startGame()">▶ Start Game</button>
+    
+    <!-- MODE SELECTOR -->
+    <div class="mode-selector">
+      <button class="mode-btn mode-auto" id="autoModeBtn" onclick="setMode('auto')">🤖 AUTO</button>
+      <button class="mode-btn mode-manual" id="manualModeBtn" onclick="setMode('manual')">👆 MANUAL</button>
+    </div>
+    
+    <!-- MANUAL CALL BUTTON -->
+    <button class="manual-call-btn" id="manualCallBtn" onclick="callNumberManually()" disabled>🎲 CALL NUMBER 🎲</button>
+    
+    <button class="pause" onclick="pauseGame()">⏸️ Pause</button>
+    <button class="stop" onclick="stopGame()">⏹️ Stop</button>
+    <button class="full" onclick="toggleFullScreen()">⛶ Fullscreen</button>
+    <button class="export" onclick="exportNumbers()">📤 Export Numbers</button>
+  </div>
+
+  <div class="main">
+    <div class="brand-logo">
+      <div class="logo-bbn">BBN</div>
+      <div class="logo-sub">BEYOND BEAUTY NETWORK</div>
+    </div>
+
+    <h1 style="margin-top: 0; font-size: 2.6rem;">🎉 TAMBOLA 🎉</h1>
+    
+    <!-- MODE INDICATOR -->
+    <div class="mode-indicator" id="modeIndicator">
+      Current Mode: <span id="currentModeText">AUTO</span>
+    </div>
+    
+    <div id="numberDisplay">--</div>
+    <h3>📋 Tambola Board</h3>
+    <div class="board" id="board"></div>
+    <h3>🔢 Called Numbers</h3>
+    <div id="history"></div>
+    <footer>Developed by Venkatesh Durgam 🚀</footer>
+  </div>
+</div>
+
+<!-- Confetti container -->
+<div id="confettiContainer" class="confetti" style="display: none;"></div>
+
+<script>
+  (function() {
+    let numbers = [];
+    let timer = null;
+    let running = false;
+    let paused = false;
+    let calledCount = 0;
+    
+    // Mode state
+    let currentMode = 'auto';
+    let isFullscreen = false;
+    
+    // Store colors for each number (for history)
+    let numberColors = {};
+    
+    // DOM elements
+    const autoBtn = document.getElementById('autoModeBtn');
+    const manualBtn = document.getElementById('manualModeBtn');
+    const manualCallBtn = document.getElementById('manualCallBtn');
+    const modeText = document.getElementById('currentModeText');
+    const pauseBtn = document.querySelector('.pause');
+    const fullscreenBtn = document.querySelector('.full');
+    const body = document.body;
+
+    function createBoard() {
+      const board = document.getElementById("board");
+      board.innerHTML = '';
+      for (let i = 1; i <= 90; i++) {
+        let div = document.createElement("div");
+        div.className = "cell";
+        div.id = "cell-" + i;
+        div.innerText = i;
+        board.appendChild(div);
+      }
+    }
+    createBoard();
+
+    // TOGGLE FULLSCREEN
+    window.toggleFullScreen = function() {
+      if (!isFullscreen) {
+        body.classList.add('fullscreen-mode');
+        fullscreenBtn.innerHTML = '⛶ Exit Fullscreen';
+        isFullscreen = true;
+        
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        }
+      } else {
+        body.classList.remove('fullscreen-mode');
+        fullscreenBtn.innerHTML = '⛶ Fullscreen';
+        isFullscreen = false;
+        
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    };
+
+    // Listen for fullscreen change events
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement && 
+          !document.mozFullScreenElement && !document.msFullscreenElement) {
+        body.classList.remove('fullscreen-mode');
+        fullscreenBtn.innerHTML = '⛶ Fullscreen';
+        isFullscreen = false;
+      }
+    }
+
+    window.setMode = function(mode) {
+      currentMode = mode;
+      
+      if (mode === 'auto') {
+        autoBtn.classList.add('mode-active');
+        manualBtn.classList.remove('mode-active');
+        modeText.innerText = 'AUTO';
+        manualCallBtn.disabled = true;
+        manualCallBtn.classList.add('disabled');
+        
+        if (running && !paused) {
+          if (timer) clearTimeout(timer);
+          scheduleNext();
+        }
+      } else {
+        manualBtn.classList.add('mode-active');
+        autoBtn.classList.remove('mode-active');
+        modeText.innerText = 'MANUAL';
+        manualCallBtn.disabled = false;
+        manualCallBtn.classList.remove('disabled');
+        
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+      }
+    };
+
+    window.callNumberManually = function() {
+      if (currentMode !== 'manual') {
+        alert('Please switch to MANUAL mode first!');
+        return;
+      }
+      
+      if (!running) {
+        alert('Please start the game first!');
+        return;
+      }
+      
+      if (paused) {
+        alert('Game is paused. Resume to call numbers.');
+        return;
+      }
+      
+      if (numbers.length === 0) {
+        alert('🎯 No more numbers to call!');
+        return;
+      }
+      
+      showNumber();
+    };
+
+    function shuffleNumbers() {
+      numbers = [];
+      for (let i = 1; i <= 90; i++) numbers.push(i);
+      for (let i = numbers.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [numbers[i], numbers[j]] = [numbers[j], numbers[i]];
+      }
+    }
+
+    function createConfetti() {
+      const container = document.getElementById('confettiContainer');
+      container.style.display = 'block';
+      container.innerHTML = '';
+      
+      for (let i = 0; i < 50; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + '%';
+        piece.style.animationDelay = Math.random() * 2 + 's';
+        piece.style.background = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        piece.style.width = Math.random() * 10 + 5 + 'px';
+        piece.style.height = Math.random() * 15 + 10 + 'px';
+        container.appendChild(piece);
+      }
+      
+      setTimeout(() => {
+        container.style.display = 'none';
+        container.innerHTML = '';
+      }, 5000);
+    }
+
+    function speakNumber(num) {
+      try {
+        const speech = new SpeechSynthesisUtterance("Number " + num);
+        window.speechSynthesis.speak(speech);
+      } catch (e) {}
+    }
+
+    function playBeep() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        osc.frequency.setValueAtTime(600, ctx.currentTime);
+        osc.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
+        if (ctx.state === 'suspended') ctx.resume();
+      } catch (e) {}
+    }
+
+    function showNumber() {
+      if (numbers.length === 0) {
+        alert("🎯 Game Completed! 🎯");
+        createConfetti();
+        stopGame();
+        return;
+      }
+
+      let num = numbers.pop();
+      calledCount++;
+
+      // Get animation type based on number (1-20 cycle)
+      const animType = ((num - 1) % 20) + 1;
+      
+      // Store color for this number
+      numberColors[num] = animType;
+      
+      // Apply animation to main display
+      const display = document.getElementById("numberDisplay");
+      display.innerHTML = num;
+      
+      // Remove any existing animation classes
+      for (let i = 1; i <= 20; i++) {
+        display.classList.remove(`number-pulse-${i}`);
+      }
+      
+      // Add new animation class
+      display.classList.add(`number-pulse-${animType}`);
+      
+      // Remove animation class after it completes
+      setTimeout(() => {
+        display.classList.remove(`number-pulse-${animType}`);
+      }, 800);
+
+      // Apply animation and color to cell
+      const cell = document.getElementById("cell-" + num);
+      if (cell) {
+        // Remove any existing cell animation and color classes
+        for (let i = 1; i <= 20; i++) {
+          cell.classList.remove(`called-${i}`);
+          cell.classList.remove(`called-color-${i}`);
+        }
+        
+        // Add new cell animation and color classes
+        cell.classList.add('called');
+        cell.classList.add(`called-${animType}`);
+        cell.classList.add(`called-color-${animType}`);
+        
+        // Remove cell animation class after it completes (keep the color)
+        setTimeout(() => {
+          cell.classList.remove(`called-${animType}`);
+        }, 800);
+        
+        // Special handling for multiples of 10
+        if (num % 10 === 0) {
+          cell.classList.add('called-special');
+          setTimeout(() => cell.classList.remove('called-special'), 1000);
+          
+          if (num % 30 === 0) {
+            createConfetti();
+          }
+        }
+      }
+
+      // Add to history with unique color
+      const historyDiv = document.getElementById("history");
+      const span = document.createElement("span");
+      span.innerText = num;
+      span.classList.add(`history-color-${animType}`);
+      historyDiv.appendChild(span);
+      
+      span.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      // Random sparkle effect
+      if (calledCount % 5 === 0) {
+        document.querySelectorAll('.cell').forEach(c => {
+          if (!c.classList.contains('called') && Math.random() > 0.7) {
+            c.style.transform = 'scale(1.1)';
+            c.style.transition = '0.2s';
+            setTimeout(() => c.style.transform = '', 200);
+          }
+        });
+      }
+
+      playBeep();
+      speakNumber(num);
+    }
+
+    function scheduleNext() {
+      if (!running || paused || currentMode !== 'auto') return;
+      
+      const next = 8000 + Math.random() * 2000;
+      timer = setTimeout(() => {
+        showNumber();
+        scheduleNext();
+      }, next);
+    }
+
+    window.startGame = function() {
+      document.getElementById("history").innerHTML = "";
+      document.querySelectorAll(".cell").forEach(c => {
+        c.classList.remove("called", "called-special");
+        // Remove any animation and color classes
+        for (let i = 1; i <= 20; i++) {
+          c.classList.remove(`called-${i}`);
+          c.classList.remove(`called-color-${i}`);
+        }
+      });
+      
+      // Clear stored colors
+      numberColors = {};
+      
+      // Remove animation classes from display
+      const display = document.getElementById("numberDisplay");
+      for (let i = 1; i <= 20; i++) {
+        display.classList.remove(`number-pulse-${i}`);
+      }
+      display.innerHTML = "--";
+      
+      shuffleNumbers();
+      calledCount = 0;
+      running = true;
+      paused = false;
+
+      if (timer) clearTimeout(timer);
+      
+      pauseBtn.innerHTML = '⏸️ Pause';
+      
+      if (currentMode === 'auto') {
+        setTimeout(() => {
+          if (running) {
+            showNumber();
+            scheduleNext();
+          }
+        }, 500);
+      } else {
+        manualCallBtn.disabled = false;
+        manualCallBtn.classList.remove('disabled');
+      }
+    };
+
+    window.pauseGame = function() {
+      if (!running) return;
+      
+      paused = !paused;
+      pauseBtn.innerHTML = paused ? '▶️ Resume' : '⏸️ Pause';
+      
+      if (currentMode === 'auto') {
+        if (!paused) {
+          if (timer) clearTimeout(timer);
+          scheduleNext();
+        } else {
+          if (timer) {
+            clearTimeout(timer);
+            timer = null;
+          }
+        }
+      } else {
+        if (paused) {
+          manualCallBtn.disabled = true;
+          manualCallBtn.classList.add('disabled');
+        } else {
+          manualCallBtn.disabled = false;
+          manualCallBtn.classList.remove('disabled');
+        }
+      }
+    };
+
+    window.stopGame = function() {
+      running = false;
+      paused = false;
+      pauseBtn.innerHTML = '⏸️ Pause';
+      
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+      
+      manualCallBtn.disabled = true;
+      manualCallBtn.classList.add('disabled');
+    };
+
+    window.exportNumbers = function() {
+      const spans = document.querySelectorAll("#history span");
+      const called = Array.from(spans).map(span => span.innerText);
+      const content = called.join(', ');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'Tambola_Called_Numbers.txt';
+      link.click();
+      URL.revokeObjectURL(link.href);
+    };
+
+    // Initialize with auto mode
+    setMode('auto');
+
+    // Initialize audio context on first click
+    window.addEventListener('click', function initAudio() {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (ctx.state === 'suspended') ctx.resume();
+    }, { once: true });
+
+  })();
+</script>
+</body>
+</html>
