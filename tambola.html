@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BBN Professional Tambola</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+    font-family:'Segoe UI',sans-serif;
+    background:linear-gradient(135deg,#000428,#004e92);
+    color:white;
+    min-height:100vh;
+}
+
+.container{display:flex;min-height:100vh}
+
+.sidebar{
+    width:240px;
+    background:#001f3f;
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+}
+
+.sidebar button{
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.start{background:#28a745;color:white}
+.auto{background:#00bcd4;color:white}
+.manual{background:#ff9800;color:white}
+.push{background:#17a2b8;color:white}
+.stop{background:#dc3545;color:white}
+.full{background:#6f42c1;color:white}
+.export{background:#ffc107}
+
+.main{
+    flex:1;
+    padding:20px;
+    text-align:center;
+    position:relative;
+}
+
+/* Logo */
+.top-logo{
+    position:absolute;
+    top:20px;
+    right:20px;
+    width:120px;
+    border-radius:10px;
+}
+
+/* Game Area */
+.game-area{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:80px;
+    margin-top:50px;
+    flex-wrap:wrap;
+}
+
+/* NUMBER TEXT ONLY */
+#numberDisplay{
+    font-size:150px;
+    font-weight:bold;
+    color:white;
+}
+
+/* ✨ Glow + Zoom Animation (TEXT ONLY) */
+.number-animate{
+    animation: zoomGlow 1s ease;
+}
+
+@keyframes zoomGlow{
+    0%{
+        transform:scale(0.3);
+        opacity:0;
+        text-shadow:0 0 10px #fff;
+    }
+    50%{
+        transform:scale(1.4);
+        text-shadow:0 0 40px gold,0 0 80px orange;
+    }
+    100%{
+        transform:scale(1);
+        opacity:1;
+        text-shadow:0 0 20px gold;
+    }
+}
+
+/* Board */
+.board{
+    display:grid;
+    grid-template-columns:repeat(10,50px);
+    gap:8px;
+}
+
+.cell{
+    width:50px;height:50px;
+    border-radius:50%;
+    background:#5d4037;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:bold;
+}
+
+.called{
+    background:gold !important;
+    color:#003366 !important;
+}
+
+/* History */
+#history{
+    margin-top:20px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    justify-content:center;
+}
+
+#history span{
+    background:gold;
+    color:#003366;
+    padding:6px 12px;
+    border-radius:30px;
+    font-weight:bold;
+}
+
+.hidden{display:none}
+
+/* Mobile */
+@media(max-width:800px){
+    .container{flex-direction:column}
+    .sidebar{width:100%;flex-direction:row;flex-wrap:wrap;justify-content:center}
+    .game-area{flex-direction:column;gap:30px}
+    #numberDisplay{font-size:90px;}
+    .board{grid-template-columns:repeat(10,35px)}
+    .cell{width:35px;height:35px;font-size:12px}
+    .top-logo{width:80px;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="sidebar">
+<button id="startBtn" class="start" onclick="startGame()">▶ Start Game</button>
+<button id="autoBtn" class="auto hidden" onclick="selectMode('auto')">🔁 Auto Mode</button>
+<button id="manualBtn" class="manual hidden" onclick="selectMode('manual')">✋ Manual Mode</button>
+<button id="pushBtn" class="push hidden" onclick="pushNumber()">▶ Push</button>
+<button id="stopBtn" class="stop hidden" onclick="stopGame()">⏹ Stop</button>
+<button id="fullBtn" class="full hidden" onclick="toggleFull()">⛶ Fullscreen</button>
+<button id="exportBtn" class="export hidden" onclick="exportNumbers()">📤 Export</button>
+</div>
+
+<div class="main">
+
+<h1>🎉 TAMBOLA 🎉</h1>
+<img src="WhatsApp Image 2026-02-26 at 2.27.30 PM.jpeg" class="top-logo">
+
+<div class="game-area">
+    <div id="numberDisplay">--</div>
+    <div class="board" id="board"></div>
+</div>
+
+<h3>Called Numbers</h3>
+<div id="history"></div>
+
+</div>
+</div>
+
+<script>
+let numbers=[],called=[],timer=null,mode=null;
+
+function createBoard(){
+    let board=document.getElementById("board");
+    for(let i=1;i<=90;i++){
+        let d=document.createElement("div");
+        d.className="cell";
+        d.id="cell-"+i;
+        d.innerText=i;
+        board.appendChild(d);
+    }
+}
+createBoard();
+
+function shuffle(){
+    numbers=[];
+    called=[];
+    document.getElementById("history").innerHTML="";
+    for(let i=1;i<=90;i++)numbers.push(i);
+    numbers.sort(()=>Math.random()-0.5);
+}
+
+function startGame(){
+    shuffle();
+    document.getElementById("startBtn").classList.add("hidden");
+    document.getElementById("autoBtn").classList.remove("hidden");
+    document.getElementById("manualBtn").classList.remove("hidden");
+}
+
+function selectMode(selected){
+    mode=selected;
+    document.getElementById("autoBtn").classList.add("hidden");
+    document.getElementById("manualBtn").classList.add("hidden");
+    document.getElementById("pushBtn").classList.remove("hidden");
+    document.getElementById("stopBtn").classList.remove("hidden");
+    document.getElementById("fullBtn").classList.remove("hidden");
+    document.getElementById("exportBtn").classList.remove("hidden");
+    if(mode==="auto") autoCall();
+}
+
+function pushNumber(){
+    showNumber();
+}
+
+function showNumber(){
+    if(numbers.length===0){
+        alert("Game Finished");
+        stopGame();
+        return;
+    }
+
+    let num=numbers.pop();
+    called.push(num);
+
+    let display=document.getElementById("numberDisplay");
+    display.innerText=num;
+
+    display.classList.remove("number-animate");
+    void display.offsetWidth;
+    display.classList.add("number-animate");
+
+    document.getElementById("cell-"+num).classList.add("called");
+
+    let span=document.createElement("span");
+    span.innerText=num;
+    document.getElementById("history").appendChild(span);
+
+    let msg=new SpeechSynthesisUtterance("Number "+num);
+    speechSynthesis.speak(msg);
+}
+
+function autoCall(){
+    if(mode!=="auto") return;
+    showNumber();
+    timer=setTimeout(autoCall,7000);
+}
+
+function stopGame(){
+    clearTimeout(timer);
+    location.reload();
+}
+
+function toggleFull(){
+    if(!document.fullscreenElement)
+        document.documentElement.requestFullscreen();
+    else document.exitFullscreen();
+}
+
+function exportNumbers(){
+    let blob=new Blob([called.join(", ")],{type:"text/plain"});
+    let link=document.createElement("a");
+    link.href=URL.createObjectURL(blob);
+    link.download="Tambola_Called_Numbers.txt";
+    link.click();
+}
+</script>
+
+</body>
+</html>
